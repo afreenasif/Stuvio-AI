@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-STUVIO.AI is a full-stack AI web application designed to revolutionize personalized education by generating customized video content from user prompts. This platform automates the creation of educational videos complete with AI-generated scripts, realistic voiceovers, and avatar-based visuals, making learning more engaging and accessible.
+Stuvio-AI is an AI web application developed with Flask that revolutionizes personalized learning by generating customized video lessons. It leverages Google's Gemini API to create intelligent scripts from user prompts, produces realistic voiceovers using gTTS, and compiles these into engaging, avatar-driven educational videos with MoviePy.
 
 ---
 
@@ -39,13 +39,13 @@ STUVIO.AI is a full-stack AI web application designed to revolutionize personali
 To run STUVIO.AI locally, follow these steps:
 
 1.  **Clone the repository:**
-    ```bash
+    ```
     git clone [https://github.com/afreenasif/Stuvio-AI.git](https://github.com/afreenasif/Stuvio-AI.git)
     cd Stuvio-AI
     ```
 
 2.  **Create and activate a virtual environment:**
-    ```bash
+    ```
     python -m venv venv
     # For Windows:
     .\venv\Scripts\activate
@@ -54,7 +54,7 @@ To run STUVIO.AI locally, follow these steps:
     ```
 
 3.  **Install dependencies:**
-    ```bash
+    ```
     pip install -r requirements.txt
     ```
     *(If you don't have a `requirements.txt` yet, you can create one by running `pip freeze > requirements.txt` after installing all your project's libraries like Flask, google-generative-ai, moviepy, gtts, etc.)*
@@ -69,10 +69,7 @@ To run STUVIO.AI locally, follow these steps:
     * Ensure you have `python-dotenv` installed (`pip install python-dotenv`) and load it in your `app.py` or relevant script.
 
 5.  **Run the Flask application:**
-    ```bash
-    flask run
+    if you have `app.py`:
     ```
-    or if you have `app.py`:
-    ```bash
     python app.py
     ```
