@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stuvio - Your Video for {{ topic }}</title>
+    <style>
+        body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* or flex-start for video page */
+    min-height: 100vh;
+    box-sizing: border-box;
+    color: #333; /* Default text color, adjust if needed for dark image */
+
+    /* --- Background Image Styles --- */
+    background-image: url('../static/background.jpg'); /* Ensure this path is correct */
+    background-size: 100%; /* CORRECTED: Changed '100%%' to '100%' */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #5a5a5a; /* Added a distinct fallback color for testing */
+    /* --- End Background Image Styles --- */
+}
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85); /* Slightly transparent white for content readability */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Stronger shadow */
+            text-align: center;
+            box-sizing: border-box;
+            margin-top: 30px; /* Space from top */
+            margin-bottom: 30px; /* Space from bottom */
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        video {
+            width: 100%;
+            max-width: 720px; /* Max width for the video player */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background-color: #000; /* Black background for video player */
+        }
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .navigation a {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .navigation a:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        .quiz-button {
+            background-color: #28a745; /* Green for Quiz */
+            font-weight: bold;
+        }
+        .quiz-button:hover {
+            background-color: #218838;
+        }
+        .generate-new-link {
+            background-color: #007bff; /* Blue for Generate New */
+        }
+        .generate-new-link:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Video on: {{ topic }}</h1>
+
+        {% if video_url %}
+            <video controls autoplay>
+                <source src="{{ video_url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% else %}
+            <p>No video available. Please go back and generate one.</p>
+        {% endif %}
+
+        <div class="navigation">
+            {% if quiz_available %}
+                <a href="{{ url_for('quiz_page') }}" class="quiz-button">Take Quiz</a>
+            {% endif %}
+            <a href="{{ url_for('home') }}" class="generate-new-link">Generate New Video</a>
+        </div>
+    </div>
+</body>
+</html>

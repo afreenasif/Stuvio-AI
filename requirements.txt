@@ -1,0 +1,6 @@
+flask
+gtts
+numpy
+google-generative-ai
+python-dotenv
+moviepy

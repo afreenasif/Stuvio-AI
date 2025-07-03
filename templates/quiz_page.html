@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stuvio - Quiz for {{ topic }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0; /* Remove body padding here, quiz-wrapper will handle spacing */
+            background-color: #e6f7ff; /* Original light blue background for quiz page */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+            /* Removed position: relative from body as quiz-wrapper will handle it */
+        }
+
+        /* New: Wrapper for centering quiz content and arrows */
+        .quiz-wrapper {
+            position: relative; /* Positioning context for absolute arrows */
+            max-width: 800px; /* Same max-width as the container */
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            box-sizing: border-box;
+            padding: 0 80px; /* Padding for the arrows to sit in */
+            display: flex; /* Helps center the container within the wrapper if smaller */
+            justify-content: center; /* Centers .container horizontally within the wrapper */
+            align-items: flex-start; /* Aligns content to top */
+        }
+
+        .container {
+            width: 100%; /* Take full width of its parent (.quiz-wrapper's content area) */
+            background: white; /* Solid white background for content */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            text-align: left;
+            box-sizing: border-box;
+            /* Removed fixed margin-left/right, quiz-wrapper padding handles spacing */
+            z-index: 1; /* Ensure container is above arrows */
+        }
+        h1 {
+            /* Styling for "QUIZ TIME" like your image */
+            font-size: 3.5em; /* Larger */
+            font-weight: 900; /* Bolder */
+            color: #000; /* Black text */
+            -webkit-text-stroke: 2px black; /* Black border */
+            color: white; /* White fill */
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+        }
+        .quiz-section { margin-top: 20px; }
+
+        /* Styles for individual quiz question */
+        .quiz-question {
+            margin-bottom: 30px;
+            padding: 25px; /* Increased padding */
+            border: 2px solid black; /* Black border */
+            border-radius: 15px; /* More rounded corners */
+            background-color: #f9f9f9;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.2); /* Slight shadow */
+            display: none; /* Hide questions by default */
+        }
+        .quiz-question.active {
+            display: block; /* Show only the active question */
+        }
+
+        .quiz-question p.question-text {
+            margin: 0 0 20px 0;
+            font-size: 1.3em; /* Larger question text */
+            font-weight: bold;
+            color: #333;
+            background-color: #6a0dad; /* Purple background for question text, like your image */
+            color: white; /* White text for question */
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .quiz-question ul { margin: 0; padding: 0; list-style-type: none; }
+        .quiz-question li { margin-bottom: 15px; } /* More space between options */
+        .quiz-question input[type="radio"] {
+            margin-right: 15px; /* More space */
+            transform: scale(1.5); /* Larger radio buttons */
+            accent-color: #007bff; /* Custom color for radio button */
+        }
+        .quiz-question label {
+            cursor: pointer;
+            font-size: 1.15em; /* Larger option text */
+            color: #555;
+            display: flex;
+            align-items: center;
+            background-color: white; /* White background for options */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px 15px;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .quiz-question label:hover {
+            background-color: #e9f5ff;
+            border-color: #007bff;
+        }
+        .quiz-question input[type="radio"]:checked + .option-text {
+            font-weight: bold;
+            color: #007bff; /* Highlight selected option */
+        }
+
+        /* Styles for individual question feedback */
+        .quiz-question .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+        }
+        .quiz-question .feedback.correct { background-color: #e6ffe6; color: #28a745; border: 1px solid #28a745; }
+        .quiz-question .feedback.incorrect { background-color: #ffe6e6; color: #dc3545; border: 1px solid #dc3545; }
+
+        /* Styles for highlighting options */
+        .option-text.correct-highlight { color: #28a745; font-weight: bold; }
+        .option-text.incorrect-highlight { color: #dc3545; font-weight: bold; }
+
+        /* --- New Styles for Side Navigation Arrows --- */
+        .quiz-nav-arrows {
+            position: absolute; /* Position relative to .quiz-wrapper */
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0; /* Align with left edge of quiz-wrapper padding */
+            right: 0; /* Align with right edge of quiz-wrapper padding */
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px; /* Small padding from wrapper edges */
+            box-sizing: border-box;
+            z-index: 0; /* Place behind the main container */
+        }
+
+        .quiz-nav-arrows button {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2.5em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            pointer-events: auto; /* Re-enable clicks on the buttons themselves */
+        }
+
+        .quiz-nav-arrows button:hover:not(:disabled) {
+            background-color: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+        .quiz-nav-arrows button:disabled {
+            background-color: rgba(0, 0, 0, 0.3);
+            cursor: not-allowed;
+            opacity: 0.7; /* Make them slightly more transparent when disabled */
+        }
+        /* --- End New Styles --- */
+
+        /* Submit All Button */
+        .submit-all-button {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 25px; /* Larger padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.3em; /* Larger font */
+            font-weight: bold;
+            margin-top: 30px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+            display: none; /* Hidden by default, shown on last question */
+        }
+        .submit-all-button:hover { background-color: #0056b3; }
+        .submit-all-button:disabled { background-color: #cccccc; cursor: not-allowed; }
+
+        /* Score display */
+        #scoreDisplay {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f0f8ff;
+            border: 2px solid #007bff;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            color: #0056b3;
+            display: none;
+        }
+
+        /* Overall Navigation buttons at the bottom of the container */
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            border-top: 1px solid #eee; /* Separator line */
+            padding-top: 20px;
+        }
+        .navigation a {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .navigation a:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        .generate-new-link { background-color: #007bff; }
+        .generate-new-link:hover { background-color: #0056b3; }
+        .error-message { text-align: center; color: #dc3545; margin-top: 20px; font-weight: bold; }
+
+        /* Media Queries for smaller screens */
+        @media (max-width: 900px) {
+            .quiz-wrapper {
+                padding: 0 40px; /* Reduce side padding for wrapper */
+            }
+            .quiz-nav-arrows button {
+                width: 50px;
+                height: 50px;
+                font-size: 2em;
+            }
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5em;
+                -webkit-text-stroke: 1px black;
+            }
+            .quiz-question {
+                padding: 15px;
+            }
+            .quiz-question p.question-text {
+                font-size: 1.1em;
+                padding: 10px;
+            }
+            .quiz-question label {
+                font-size: 1em;
+                padding: 8px 10px;
+            }
+            .submit-all-button {
+                font-size: 1.1em;
+                padding: 12px 20px;
+            }
+            .quiz-wrapper {
+                padding: 0 20px; /* Further reduce side padding on very small screens */
+            }
+            .quiz-nav-arrows button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-wrapper">
+        <div class="container">
+            <h1>QUIZ TIME</h1>
+
+            {% if questions %}
+                <div class="quiz-section" id="quizForm">
+                    {% for q in questions %}
+                        <div class="quiz-question" id="question-{{ q.question_index }}">
+                            <p class="question-text">{{ q.question_text }}</p>
+                            <ul class="options-list">
+                                {% for option in q.options %}
+                                    <li>
+                                        <label>
+                                            <input type="radio" name="q{{ q.question_index }}" value="{{ option.letter }}" data-correct-letter="{{ q.correct_answer_letter }}" data-correct-text="{{ q.correct_answer_text }}">
+                                            <span class="option-text">{{ option.letter }}) {{ option.text }}</span>
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="feedback" id="feedback-{{ q.question_index }}"></div>
+                        </div>
+                    {% endfor %}
+
+                    <button class="submit-all-button" id="submitQuizBtn" onclick="submitQuiz()">Submit Quiz</button>
+
+                    <div id="scoreDisplay"></div>
+
+                </div>
+            {% else %}
+                <p class="error-message">No quiz found or an error occurred during parsing. Please go back and generate a video and quiz.</p>
+            {% endif %}
+
+            <div class="navigation">
+                <a href="{{ url_for('video_page') }}">Back to Video</a>
+                <a href="{{ url_for('home') }}" class="generate-new-link">Generate New</a>
+            </div>
+        </div>
+
+        <div class="quiz-nav-arrows">
+            <button id="prevBtn">&lt;</button> <button id="nextBtn">&gt;</button> </div>
+    </div> <script>
+        const questions = document.querySelectorAll('.quiz-question');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitQuizBtn = document.getElementById('submitQuizBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        let currentQuestionIndex = 0; // Start at the first question (index 0)
+
+        // --- Core Function to Display a Question ---
+        function showQuestion(index) {
+            // Hide all questions first
+            questions.forEach(q => {
+                q.classList.remove('active');
+            });
+
+            // Show the question at the current index
+            if (questions[index]) {
+                questions[index].classList.add('active');
+            }
+
+            // Update navigation button states
+            prevBtn.disabled = (index === 0); // Disable Prev if on first question
+            nextBtn.disabled = (index === questions.length - 1); // Disable Next if on last question
+
+            // Show submit button only on the last question
+            if (index === questions.length - 1) {
+                submitQuizBtn.style.display = 'block';
+            } else {
+                submitQuizBtn.style.display = 'none';
+            }
+        }
+
+        // --- Navigation Functions ---
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion(currentQuestionIndex);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion(currentQuestionIndex);
+            }
+        }
+
+        // --- Event Listeners for Navigation Buttons ---
+        prevBtn.addEventListener('click', prevQuestion);
+        nextBtn.addEventListener('click', nextQuestion);
+
+        // --- Initial Load: Display the first question ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (questions.length > 0) {
+                showQuestion(currentQuestionIndex);
+            } else {
+                // If no questions, disable buttons and hide submit button
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                submitQuizBtn.style.display = 'none';
+                console.warn("No questions found to display.");
+            }
+        });
+
+        // --- Submit Quiz Function (Modified to keep nav buttons enabled) ---
+        function submitQuiz() {
+            const quizQuestions = document.querySelectorAll('.quiz-question');
+            let score = 0;
+            let totalQuestions = quizQuestions.length;
+
+            quizQuestions.forEach((questionDiv) => {
+                const questionNumber = parseInt(questionDiv.id.replace('question-', ''));
+
+                const selectedOption = questionDiv.querySelector(`input[name="q${questionNumber}"]:checked`);
+                const feedbackDiv = questionDiv.querySelector('.feedback');
+                const allOptionsSpans = questionDiv.querySelectorAll('.option-text');
+
+                // Clear previous highlights and feedback for all questions when submitting
+                allOptionsSpans.forEach(opt => {
+                    opt.classList.remove('correct-highlight', 'incorrect-highlight');
+                });
+                feedbackDiv.style.display = 'none';
+
+                if (!selectedOption) {
+                    feedbackDiv.textContent = 'Please select an option for this question.';
+                    feedbackDiv.className = 'feedback incorrect';
+                    feedbackDiv.style.display = 'block';
+                } else {
+                    const userAnswerLetter = selectedOption.value;
+                    const correctAnswerLetter = selectedOption.dataset.correctLetter;
+                    const correctAnswerText = selectedOption.dataset.correctText;
+
+                    if (userAnswerLetter === correctAnswerLetter) {
+                        feedbackDiv.textContent = 'Correct!';
+                        feedbackDiv.className = 'feedback correct';
+                        selectedOption.nextElementSibling.classList.add('correct-highlight');
+                        score++;
+                    } else {
+                        feedbackDiv.textContent = `Incorrect. The correct answer was ${correctAnswerLetter}) ${correctAnswerText}.`;
+                        feedbackDiv.className = 'feedback incorrect';
+                        selectedOption.nextElementSibling.classList.add('incorrect-highlight');
+                        allOptionsSpans.forEach(opt => {
+                            if (opt.textContent.startsWith(correctAnswerLetter + ')')) {
+                                opt.classList.add('correct-highlight');
+                            }
+                        });
+                    }
+                    feedbackDiv.style.display = 'block';
+                }
+
+                // Disable all radio buttons for this question after submission
+                questionDiv.querySelectorAll('input[type="radio"]').forEach(radio => radio.disabled = true);
+            });
+
+            // Display final score
+            scoreDisplay.textContent = `You scored ${score} out of ${totalQuestions} questions!`;
+            scoreDisplay.style.display = 'block';
+
+            // ONLY DISABLE THE SUBMIT BUTTON, KEEP NAVIGATION BUTTONS ACTIVE
+            submitQuizBtn.disabled = true;
+            // prevBtn.disabled = true; // REMOVED
+            // nextBtn.disabled = true; // REMOVED
+        }
+    </script>
+</body>
+</html>

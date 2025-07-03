@@ -1,0 +1,10 @@
+venv/
+
+#python cache
+__pycache__/
+*.pyc
+
+#audio files
+voice*.mp3
+
+.env
